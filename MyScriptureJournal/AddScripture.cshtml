@@ -1,0 +1,67 @@
+﻿@{
+    Validation.RequireField("book", "Please enter a book");
+    Validation.RequireField("chapter", "Please enter a chapter");
+    Validation.RequireField("verse", "Please enter a verse");
+
+
+    var book = "";
+    var chapter = "";
+    var verse = "";
+    var note = "";
+
+    if (IsPost)
+    {
+        book = Request.Form["book"];
+        chapter = Request.Form["chapter"];
+        verse = Request.Form["verse"];
+        note = Request.Form["note"];
+        var date = DateTime.Now;
+        var db = WebMatrix.Data.Database.Open("MyScriptureJournalDatabase");
+        var queryString = "INSERT INTO scriptures(book, chapter, verse, note, date) VALUES(@0, @1, @2, @3, @4)";
+        db.Execute(queryString, book, chapter, verse, note, date);
+        Response.Redirect("~/Scriptures");
+    }
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet">
+    <link href="~/Stylesheet.css" rel="stylesheet">
+</head>
+<body>
+        @Html.ValidationSummary()
+        <form method="post">
+            <fieldset>
+                <legend>Add a New Scripture</legend>
+                <p>
+                    <label for="book">Book: </label>
+                    <input type="text" id="book" name="book" value="@Request.Form["book"]" />
+                    @Html.ValidationMessage("book")
+                </p>
+
+                <p>
+                    <label for="chapter">Chapter: </label>
+                    <input type="text" id="chapter" name="chapter" value="@Request.Form["chapter"]" />
+                    @Html.ValidationMessage("chapter")
+                </p>
+
+                <p>
+                    <label for="verse">Verse: </label>
+                    <input type="text" id="verse" name="verse" value="@Request.Form["verse"]" />
+                    @Html.ValidationMessage("verse")
+                </p>
+
+                <p>
+                    <label for="note">Note (Optional): </label>
+                    <input type="text" id="note" name="note" value="@Request.Form["note"]" />
+                </p>
+
+                <input type="submit" name="newScriptureSubmit" value="Add Scripture" />
+            </fieldset>
+        </form>
+    <p><a href="~/Scriptures">Back to Home</a></p>
+</body>
+</html>

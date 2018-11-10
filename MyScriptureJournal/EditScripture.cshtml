@@ -1,0 +1,101 @@
+﻿@{
+    Page.Title = "Edit a Scripture";
+
+    var book = "";
+    var chapter = "";
+    var verse = "";
+    var note = "";
+    var scriptureId = "";
+
+    if (!IsPost)
+    {
+        if (!Request.QueryString["ID"].IsEmpty() && Request.QueryString["ID"].IsInt())
+        {
+            scriptureId = Request.QueryString["ID"];
+            var db = WebMatrix.Data.Database.Open("MyScriptureJournalDatabase");
+            var dbCommand = "SELECT * FROM scriptures WHERE Id = @0";
+            var row = db.QuerySingle(dbCommand, scriptureId);
+
+            if (row != null)
+            {
+                book = row.book;
+                chapter = row.chapter.ToString();
+                verse = row.verse.ToString();
+                note = row.note;
+            }
+            else
+            {
+                Validation.AddFormError("Something must have gone wrong!");
+            }
+        }
+        else
+        {
+            Validation.AddFormError("Something went terribly wrong!");
+        }
+    }
+
+    if (IsPost)
+    {
+        Validation.RequireField("book", "You must enter a book");
+        Validation.RequireField("chapter", "You must enter a chapter");
+        Validation.RequireField("verse", "You must enter a verse");
+        Validation.RequireField("scriptureId", "No ID submitted");
+
+        book = Request.Form["book"];
+        chapter = Request.Form["chapter"];
+        verse = Request.Form["verse"];
+        note = Request.Form["note"];
+        scriptureId = Request.Form["scriptureId"];
+
+        if (Validation.IsValid())
+        {
+            var db = WebMatrix.Data.Database.Open("MyScriptureJournalDatabase");
+            var dbCommand = "UPDATE scriptures SET book = @0, chapter = @1, verse = @2, note = @3 WHERE Id = @4";
+            db.Execute(dbCommand, book, chapter, verse, note, scriptureId);
+            Response.Redirect("~/Scriptures");
+
+        }
+    }
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet">
+    <link href="~/Stylesheet.css" rel="stylesheet">
+</head>
+<body>
+    <h1>Edit Scripture</h1>
+    @Html.ValidationSummary()
+    <form method="post">
+        <fieldset>
+            <legend>Scripture Info</legend>
+            <p>
+                <label for="book">Book: </label>
+                <input type="text" id="book" name="book" value="@book" />
+            </p>
+
+            <p>
+                <label for="chapter">Chapter: </label>
+                <input type="text" id="chapter" name="chapter" value="@chapter" />
+            </p>
+
+            <p>
+                <label for="verse">Verse: </label>
+                <input type="text" id="verse" name="verse" value="@verse" />
+            </p>
+
+            <p>
+                <label for="note">Note: </label>
+                <input type="text" id="note" name="note" value="@note" />
+            </p>
+
+            <input type="hidden" name="scriptureId" value="@scriptureId" />
+            <p><input type="submit" name="buttonSubmit" value="Submit Changes" /></p>
+        </fieldset>
+    </form>
+    <p><a href="~/Scriptures">Back to Home</a></p>
+</body>
+</html>

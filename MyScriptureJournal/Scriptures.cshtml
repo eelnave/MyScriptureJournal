@@ -1,0 +1,87 @@
+﻿@{
+    var db = WebMatrix.Data.Database.Open("MyScriptureJournalDatabase");
+    var query = "SELECT * FROM scriptures";
+    var searchTerm = "";
+
+    if (!Request.QueryString["bookSearch"].IsEmpty())
+    {
+        searchTerm = Request.QueryString["bookSearch"];
+        query = "SELECT * FROM scriptures WHERE book = @0";
+    }
+
+    if (!Request.QueryString["searchNote"].IsEmpty())
+    {
+        searchTerm = "%" + Request["searchNote"] + "%";
+        query = "SELECT * FROM scriptures WHERE note LIKE @0";
+    }
+
+    var returnData = db.Query(query, searchTerm);
+    var scriptureDisplayGrid = new WebGrid(source: returnData, defaultSort: "book", rowsPerPage: 5);
+}
+
+<!DOCTYPE html>
+
+<html lang="en-us">
+<head>
+    <meta name="viewport" content="width=device-width" charset="utf-8" />
+    <link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet">
+    <link href="~/Stylesheet.css" rel="stylesheet">
+    <title>My Scripture Journal</title>
+    <style>
+        .grid {
+            margin: 4px;
+            border-collapse: collapse;
+            width: 600px;
+        }
+
+            .grid th, .grid td {
+                border: 1px solid #C0C0C0;
+                padding: 5px;
+            }
+
+        .head {
+            background-color: #E8E8E8;
+            font-weight: bold;
+            color: #FFF;
+        }
+
+        .alt {
+            background-color: #E8E8E8;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <h1>My Scripture Journal</h1>
+    <form method="get">
+        <div>
+            <label for="bookSearch">Search by book: </label>
+            <input type="text" id="bookSearch" name="bookSearch" value="@Request.QueryString["bookSearch"]" />
+            <input type="submit" value="Search Book" /> <br />
+        </div>
+        <div>
+            <label for="searchNote">Search by keyword in scripture note</label>
+            <input type="text" id="searchNote" name="searchNote" value="@Request.QueryString["searchNote"]" />
+            <input type="submit" value="Search Notes" />
+        </div>
+        <p>Leave blank to list all scriptures</p><br />
+    </form>
+    <div>
+        @scriptureDisplayGrid.GetHtml(
+           tableStyle: "grid",
+           headerStyle: "head",
+           alternatingRowStyle: "alt",
+           columns: scriptureDisplayGrid.Columns(
+           scriptureDisplayGrid.Column(format: @<a href="~/EditScripture?id=@item.ID">Edit</a>),
+           scriptureDisplayGrid.Column("Book"),
+           scriptureDisplayGrid.Column("Chapter"),
+           scriptureDisplayGrid.Column("Verse"),
+           scriptureDisplayGrid.Column("Note"),
+           scriptureDisplayGrid.Column("Date"),
+           scriptureDisplayGrid.Column(format: @<a href="~/DeleteScripture?id=@item.ID">Delete</a>)
+           )
+    )
+    </div>
+    <p><a href="~/AddScripture">Add a Scripture</a></p>
+</body>
+</html>

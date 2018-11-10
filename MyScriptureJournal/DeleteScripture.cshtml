@@ -1,0 +1,85 @@
+﻿@{
+    Page.Title = "Delete a Scripture";
+
+    var book = "";
+    var chapter = "";
+    var verse = "";
+    var note = "";
+    var scriptureId = "";
+
+    if (!IsPost)
+    {
+        if (!Request.QueryString["ID"].IsEmpty() && Request.QueryString["ID"].IsInt())
+        {
+            scriptureId = Request.QueryString["ID"];
+            var db = WebMatrix.Data.Database.Open("MyScriptureJournalDatabase");
+            var dbCommand = "SELECT * FROM scriptures WHERE Id = @0";
+            var row = db.QuerySingle(dbCommand, scriptureId);
+
+            if (row != null)
+            {
+                book = row.book;
+                chapter = row.chapter.ToString();
+                verse = row.verse.ToString();
+                note = row.note;
+            }
+            else
+            {
+                Validation.AddFormError("Something must have gone wrong!");
+            }
+        }
+        else
+        {
+            Validation.AddFormError("Something went terribly wrong!");
+        }
+    }
+    if (IsPost)
+    {
+        scriptureId = Request.Form["scriptureId"];
+        var db = WebMatrix.Data.Database.Open("MyScriptureJournalDatabase");
+        var dbCommand = "DELETE FROM scriptures WHERE id=@0";
+        db.Execute(dbCommand, scriptureId);
+        Response.Redirect("~/Scriptures");
+    }
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet">
+    <link href="~/Stylesheet.css" rel="stylesheet">
+</head>
+<body>
+    @Html.ValidationSummary()
+    <form method="post">
+        <fieldset>
+            <legend>Delete a Scripture</legend>
+            <p>
+                <label for="book">Book: </label>
+                <input type="text" id="book" name="book" value="@book" readonly />
+            </p>
+
+            <p>
+                <label for="chapter">Chapter: </label>
+                <input type="text" id="chapter" name="chapter" value="@chapter" readonly />
+            </p>
+
+            <p>
+                <label for="verse">Verse: </label>
+                <input type="text" id="verse" name="verse" value="@verse" readonly />
+            </p>
+
+            <p>
+                <label for="note">Note: </label>
+                <input type="text" id="note" name="note" value="@note" readonly />
+            </p>
+
+            <input type="hidden" name="scriptureId" value="@scriptureId" />
+            <p><input type="submit" name="buttonSubmit" value="Confirm Deletion" /></p>
+        </fieldset>
+    </form>
+    <p><a href="~/Scriptures">Back to Home</a></p>
+</body>
+</html>
